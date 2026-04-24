@@ -452,6 +452,7 @@ def main():
             fig, ax = plt.subplots(figsize=(10, 5))
             ax.plot(best_hist, label="Best fitness", linewidth=1.5)
             ax.plot(mean_hist, label="Mean fitness", alpha=0.7)
+            ax.set_xticks(range(0, NUM_GENERATIONS+1, 25))
             ax.set_xlabel("Generation")
             ax.set_ylabel("Fitness")
             ax.set_title("Fitness over generations")
