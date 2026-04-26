@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+
+# Virtual environments
+.venv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# macOS
+.DS_Store
+
+# Output / logs
+*.png
