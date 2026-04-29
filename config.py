@@ -81,11 +81,11 @@ NORM_THETA = np.pi
 NORM_OMEGA = 5.0
 
 # ========================= GENETIC ALGORITHM ====================
-POPULATION_SIZE = 200
+POPULATION_SIZE = 100
 NUM_GENERATIONS = 300
 TOURNAMENT_SIZE = 5
 CROSSOVER_RATE = 0.7
-MUTATION_RATE = 0.05         # per-gene probability
+MUTATION_RATE = 0.1          # per-gene probability
 MUTATION_SIGMA = 0.1        # Gaussian noise σ
 ELITISM_COUNT = 5
 
