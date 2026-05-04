@@ -168,12 +168,14 @@ class Renderer:
             raise RuntimeError("pygame is required for visualisation")
         pygame.init()
         pygame.display.set_caption("2D Rocket Landing — Genetic Algorithm")
-        self.W = width
-        self.H = height
         self.base_vis_scale = scale
         self.scale = scale
         self.fps = fps
-        self.screen = pygame.display.set_mode((width, height))
+        self._fullscreen = False
+        self._windowed_size = (width, height)
+        self.screen = pygame.display.set_mode(
+            (width, height), pygame.RESIZABLE)
+        self.W, self.H = self.screen.get_size()
         self.clock = pygame.time.Clock()
         self.sprite_rng = np.random.default_rng()
         self.dragging_camera = False
@@ -426,6 +428,18 @@ class Renderer:
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 return "quit"
+            if ev.type == pygame.VIDEORESIZE and not self._fullscreen:
+                self._apply_resize(ev.w, ev.h)
+            if not self._fullscreen and hasattr(pygame, "WINDOWRESIZED"):
+                if ev.type in (pygame.WINDOWRESIZED, pygame.WINDOWSIZECHANGED):
+                    self._apply_resize(ev.x, ev.y)
+            we_type = getattr(pygame, "WINDOWEVENT", None)
+            if not self._fullscreen and we_type is not None and ev.type == we_type:
+                sub = getattr(ev, "event", None)
+                resized = getattr(pygame, "WINDOWEVENT_RESIZED", None)
+                size_changed = getattr(pygame, "WINDOWEVENT_SIZE_CHANGED", None)
+                if resized is not None and sub in (resized, size_changed):
+                    self._apply_resize(ev.x, ev.y)
             if ev.type == pygame.MOUSEWHEEL:
                 self._set_camera_zoom(
                     self.camera_zoom + self.ZOOM_STEP * ev.y,
@@ -459,7 +473,44 @@ class Renderer:
                     self._set_camera_zoom(self.camera_zoom - self.ZOOM_STEP)
                 if ev.key == pygame.K_0:
                     self._reset_camera()
+                if ev.key == pygame.K_F11:
+                    self._toggle_fullscreen()
         return None
+
+    def _apply_resize(self, w, h):
+        """Rebuild display surface and camera bounds after a window resize."""
+        w = max(320, int(w))
+        h = max(240, int(h))
+        if w == self.W and h == self.H:
+            return
+        flags = pygame.FULLSCREEN if self._fullscreen else pygame.RESIZABLE
+        self.screen = pygame.display.set_mode((w, h), flags)
+        self._refresh_viewport_after_display_change()
+
+    def _refresh_viewport_after_display_change(self):
+        self.W, self.H = self.screen.get_size()
+        if not self._fullscreen:
+            self._windowed_size = (self.W, self.H)
+        self.min_camera_zoom = max(
+            self.W / self.bg_native_size[0],
+            self.H / self.bg_native_size[1],
+        )
+        if self.camera_zoom < self.min_camera_zoom:
+            self.camera_zoom = self.min_camera_zoom
+        self._apply_camera_zoom()
+
+    def _toggle_fullscreen(self):
+        if self._fullscreen:
+            self._fullscreen = False
+            w, h = self._windowed_size
+            self.screen = pygame.display.set_mode((w, h), pygame.RESIZABLE)
+        else:
+            self._windowed_size = (self.W, self.H)
+            self._fullscreen = True
+            info = pygame.display.Info()
+            self.screen = pygame.display.set_mode(
+                (info.current_w, info.current_h), pygame.FULLSCREEN)
+        self._refresh_viewport_after_display_change()
 
     # ── coordinate helpers ──────────────────────────────────────────
 
@@ -1003,6 +1054,7 @@ class Renderer:
             (self.font, f"WIND  {wind:+6.1f}", self.HUD, 6),
             (self.font, f"ZOOM  {self.camera_zoom:.2f}X", self.HUD, 6),
             (self.font, "WASD PAN  +/- ZOOM", self.HUD_DIM, 6),
+            (self.font, "F11 FULLSCREEN", self.HUD_DIM, 6),
             (self.font, "T EXPORT TRAILS PNG", self.HUD_DIM, 6),
         ]
         rendered_text = [
