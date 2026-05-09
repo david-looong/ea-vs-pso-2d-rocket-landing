@@ -179,14 +179,18 @@ class BehaviourAccumulator:
 #  Evaluation  (one genome — used by worker processes)
 # ═══════════════════════════════════════════════════════════════════
 
-def _evaluate_one(genome: np.ndarray, cur: dict, trial_seeds: list[int]):
+def _evaluate_one(genome: np.ndarray, cur: dict, trial_seeds: list[int],
+                  nn_layers: list[int] | None = None):
     """Evaluate one genome over multiple randomised scenarios.
 
     Designed to run in a worker process — creates its own NN / Sim instances.
+    ``nn_layers`` is passed explicitly so it survives spawn-based workers
+    (which can't see runtime overrides of the module-level ``NN_LAYERS``).
     Returns (fitness, behaviour_vec, landed_any, mean_final_fuel,
     mean_landed_fuel).
     """
-    nn = NeuralNetwork(NN_LAYERS)
+    layers = NN_LAYERS if nn_layers is None else list(nn_layers)
+    nn = NeuralNetwork(layers)
     nn.set_genome(genome)
     fits, bvecs = [], []
     final_fuels = []
@@ -229,11 +233,21 @@ def _evaluate_one(genome: np.ndarray, cur: dict, trial_seeds: list[int]):
 
 
 def _worker_batch(args):
-    """Evaluate a batch of genomes (reduces IPC overhead vs one-per-call)."""
-    genomes, cur, trial_seeds = args
+    """Evaluate a batch of genomes (reduces IPC overhead vs one-per-call).
+
+    ``args`` is a 3- or 4-tuple. Older callers pass ``(genomes, cur, seeds)``;
+    the 4-tuple form ``(genomes, cur, seeds, nn_layers)`` is used when the
+    caller has overridden NN_LAYERS at runtime (e.g. a sweep) and needs the
+    workers to use the overridden value.
+    """
+    if len(args) == 4:
+        genomes, cur, trial_seeds, nn_layers = args
+    else:
+        genomes, cur, trial_seeds = args
+        nn_layers = None
     results = []
     for g in genomes:
-        results.append(_evaluate_one(g, cur, trial_seeds))
+        results.append(_evaluate_one(g, cur, trial_seeds, nn_layers))
     return results
 
 
@@ -266,7 +280,8 @@ def pick_diverse(population, behaviours, fitnesses, n=5):
 #  Parallel evaluation helper
 # ═══════════════════════════════════════════════════════════════════
 
-def evaluate_population(population, cur, trial_seeds, pool):
+def evaluate_population(population, cur, trial_seeds, pool,
+                        nn_layers: list[int] | None = None):
     """Evaluate all genomes in parallel using the process pool."""
     import os
     n_workers = os.cpu_count() or 4
@@ -274,7 +289,7 @@ def evaluate_population(population, cur, trial_seeds, pool):
     batches = []
     for i in range(0, len(population), batch_size):
         chunk = population[i:i + batch_size]
-        batches.append((chunk, cur, trial_seeds))
+        batches.append((chunk, cur, trial_seeds, nn_layers))
 
     fitnesses  = np.zeros(len(population))
     behaviours = np.zeros((len(population), 5))
@@ -311,17 +326,24 @@ def train(
     elitism_count: int = ELITISM_COUNT,
     seed: int | None = RANDOM_SEED,
     num_eval_trials: int | None = None,
+    nn_layers: list[int] | None = None,
 ) -> dict:
     """Run the GA training loop and return per-generation metrics.
 
     Returns:
         {
-            "generations": list of per-generation metric dicts,
-            "summary":     single dict with run-level summary stats,
+            "generations":         list of per-generation metric dicts,
+            "summary":             single dict with run-level summary stats,
+            "top_genomes_last_10": list of {generation, genome, training_fitness}
+                                   for the best genome of each of the last 10
+                                   generations (in chronological order). Held in
+                                   memory only — caller decides whether to
+                                   serialise the (large) genome arrays.
         }
     """
     rng = np.random.default_rng(seed)
-    genome_size = NeuralNetwork.genome_size(NN_LAYERS)
+    layers = list(NN_LAYERS) if nn_layers is None else list(nn_layers)
+    genome_size = NeuralNetwork.genome_size(layers)
     n_trials = NUM_EVAL_TRIALS if num_eval_trials is None else num_eval_trials
 
     import os
@@ -344,6 +366,9 @@ def train(
     gen_metrics: list[dict] = []
     best_hist: list[float] = []
     mean_hist: list[float] = []
+    # ring buffer of (gen, genome.copy(), training_fitness) for the best
+    # genome of each generation; we keep only the last 10 entries.
+    top_genomes_last_10: list[dict] = []
     renderer = None
     stopped_by_window = False
 
@@ -368,7 +393,7 @@ def train(
                     t0 = time.time()
                     (fitnesses, behaviours, landed, final_fuels,
                      landed_fuels) = evaluate_population(
-                        population, cur, trial_seeds, pool)
+                        population, cur, trial_seeds, pool, layers)
                     elapsed = time.time() - t0
                     cur_used = cur
 
@@ -401,6 +426,14 @@ def train(
 
                 best_hist.append(best_fit)
                 mean_hist.append(mean_fit)
+
+                top_genomes_last_10.append({
+                    "generation": gen + 1,
+                    "genome": np.asarray(population[best_idx]).copy(),
+                    "training_fitness": float(best_fit),
+                })
+                if len(top_genomes_last_10) > 10:
+                    top_genomes_last_10.pop(0)
 
                 phase = ("easy" if cur_used["max_wind"] == 0
                          else "medium" if cur_used["max_wind"] <= 5 else "hard")
@@ -443,9 +476,11 @@ def train(
                     next_seeds = [int(rng.integers(0, 2 ** 31))
                                   for _ in range(n_trials)]
 
-                    def _bg_eval(pop=next_pop, c=next_cur, seeds=next_seeds):
+                    def _bg_eval(pop=next_pop, c=next_cur, seeds=next_seeds,
+                                 lyr=layers):
                         t0 = time.time()
-                        f, b, l, ff, lf = evaluate_population(pop, c, seeds, pool)
+                        f, b, l, ff, lf = evaluate_population(
+                            pop, c, seeds, pool, lyr)
                         return (f, b, l, ff, lf, pop, c, time.time() - t0)
 
                     def _run_bg(fn):
@@ -572,7 +607,11 @@ def train(
         except Exception as exc:
             print(f"Could not plot: {exc}")
 
-    return {"generations": gen_metrics, "summary": summary}
+    return {
+        "generations": gen_metrics,
+        "summary": summary,
+        "top_genomes_last_10": top_genomes_last_10,
+    }
 
 
 def main():

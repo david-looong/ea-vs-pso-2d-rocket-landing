@@ -61,7 +61,7 @@ _BODY_VERTS = np.array([
 
 # ── ground-contact parameters ──────────────────────────────────────
 GROUND_FRICTION = 8.0       # horizontal deceleration on ground (m/s²)
-GROUND_ANGULAR_DAMP = 2.0   # energy loss per radian/s on contact
+GROUND_ANGULAR_DAMP = 15.0   # energy loss per radian/s on contact
 SETTLE_TIME = 4.0           # max seconds on ground before forcing resolution
 MIN_GROUND_TIME = 0.3       # minimum time before at-rest check fires
 SETTLED_SPEED = 0.5         # speed + ω threshold for "at rest"
