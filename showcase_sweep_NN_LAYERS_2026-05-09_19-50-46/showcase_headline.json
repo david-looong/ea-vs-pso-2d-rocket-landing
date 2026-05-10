@@ -1,0 +1,179 @@
+[
+  {
+    "value": [
+      6,
+      2
+    ],
+    "value_label": "6-2",
+    "num_trials": 3,
+    "final_window_generations": 10,
+    "nn_parameters_evolved": 14,
+    "final_landing_rate_mean": 0.5326666666666666,
+    "final_landing_rate_std": 0.045242556171030915,
+    "final_best_fitness_mean": 113.91711666666667,
+    "final_best_fitness_std": 1.1506147954994286,
+    "initial_best_fitness_mean": 46.4986,
+    "initial_best_fitness_std": 3.608800857163868,
+    "improvement_factor_mean": 2.463215670338107,
+    "improvement_factor_std": 0.17318273579634602,
+    "rocket_landings_per_training_run": 240000,
+    "champion_source_generations": [
+      296,
+      297,
+      298
+    ],
+    "champion_validation_fitness": [
+      111.06379948327368,
+      110.31058585394103,
+      105.59149505804959
+    ],
+    "robustness_fitness_mean": 107.4951111536705,
+    "robustness_fitness_std": 3.0848994891074173,
+    "robustness_fitness_median": 111.41582032782327,
+    "robustness_success_rate_mean": 0.10566666666666667,
+    "robustness_success_rate_std": 0.02894055209486432
+  },
+  {
+    "value": [
+      6,
+      8,
+      2
+    ],
+    "value_label": "6-8-2",
+    "num_trials": 3,
+    "final_window_generations": 10,
+    "nn_parameters_evolved": 74,
+    "final_landing_rate_mean": 0.8646666666666668,
+    "final_landing_rate_std": 0.025720722298480637,
+    "final_best_fitness_mean": 133.12299,
+    "final_best_fitness_std": 3.0001088335036523,
+    "initial_best_fitness_mean": 48.821333333333335,
+    "initial_best_fitness_std": 3.995582134752777,
+    "improvement_factor_mean": 2.748471554252154,
+    "improvement_factor_std": 0.27271747720145123,
+    "rocket_landings_per_training_run": 240000,
+    "champion_source_generations": [
+      298,
+      298,
+      293
+    ],
+    "champion_validation_fitness": [
+      132.60917301614998,
+      124.90385633177816,
+      125.56748609294111
+    ],
+    "robustness_fitness_mean": 126.84933904461023,
+    "robustness_fitness_std": 3.1934481067281997,
+    "robustness_fitness_median": 126.28014230493017,
+    "robustness_success_rate_mean": 0.48800000000000004,
+    "robustness_success_rate_std": 0.0820609529557146
+  },
+  {
+    "value": [
+      6,
+      8,
+      8,
+      2
+    ],
+    "value_label": "6-8-8-2",
+    "num_trials": 3,
+    "final_window_generations": 10,
+    "nn_parameters_evolved": 146,
+    "final_landing_rate_mean": 0.747,
+    "final_landing_rate_std": 0.10296601381038314,
+    "final_best_fitness_mean": 133.38856666666666,
+    "final_best_fitness_std": 5.7589407396981835,
+    "initial_best_fitness_mean": 52.21853333333333,
+    "initial_best_fitness_std": 4.32076091549728,
+    "improvement_factor_mean": 2.56446488557431,
+    "improvement_factor_std": 0.14283129412700166,
+    "rocket_landings_per_training_run": 240000,
+    "champion_source_generations": [
+      298,
+      299,
+      292
+    ],
+    "champion_validation_fitness": [
+      125.96772408341006,
+      132.86925089312928,
+      137.15053221807437
+    ],
+    "robustness_fitness_mean": 129.64419408559638,
+    "robustness_fitness_std": 4.885418497081515,
+    "robustness_fitness_median": 134.91200021065163,
+    "robustness_success_rate_mean": 0.6466666666666666,
+    "robustness_success_rate_std": 0.0979296799863158
+  },
+  {
+    "value": [
+      6,
+      16,
+      16,
+      2
+    ],
+    "value_label": "6-16-16-2",
+    "num_trials": 3,
+    "final_window_generations": 10,
+    "nn_parameters_evolved": 418,
+    "final_landing_rate_mean": 0.6996666666666668,
+    "final_landing_rate_std": 0.1172613415504966,
+    "final_best_fitness_mean": 139.07764666666668,
+    "final_best_fitness_std": 0.9380229958209241,
+    "initial_best_fitness_mean": 54.30853333333334,
+    "initial_best_fitness_std": 6.152607879771163,
+    "improvement_factor_mean": 2.590595266564018,
+    "improvement_factor_std": 0.262336401937172,
+    "rocket_landings_per_training_run": 240000,
+    "champion_source_generations": [
+      297,
+      298,
+      297
+    ],
+    "champion_validation_fitness": [
+      136.29293477254825,
+      138.58671476084405,
+      137.9498668992681
+    ],
+    "robustness_fitness_mean": 135.5918198434875,
+    "robustness_fitness_std": 1.080402679085027,
+    "robustness_fitness_median": 141.99489693037876,
+    "robustness_success_rate_mean": 0.7303333333333333,
+    "robustness_success_rate_std": 0.0354902177445498
+  },
+  {
+    "value": [
+      6,
+      24,
+      24,
+      2
+    ],
+    "value_label": "6-24-24-2",
+    "num_trials": 3,
+    "final_window_generations": 10,
+    "nn_parameters_evolved": 818,
+    "final_landing_rate_mean": 0.6856666666666665,
+    "final_landing_rate_std": 0.05839139967114636,
+    "final_best_fitness_mean": 140.23342333333332,
+    "final_best_fitness_std": 1.1400342570681343,
+    "initial_best_fitness_mean": 58.15906666666666,
+    "initial_best_fitness_std": 3.727123933484847,
+    "improvement_factor_mean": 2.4201351122026367,
+    "improvement_factor_std": 0.1394292121646096,
+    "rocket_landings_per_training_run": 240000,
+    "champion_source_generations": [
+      291,
+      298,
+      291
+    ],
+    "champion_validation_fitness": [
+      140.09500035898915,
+      138.01314558491163,
+      138.49665163831446
+    ],
+    "robustness_fitness_mean": 137.2411839755124,
+    "robustness_fitness_std": 0.6661968725685777,
+    "robustness_fitness_median": 142.2630934251271,
+    "robustness_success_rate_mean": 0.7723333333333334,
+    "robustness_success_rate_std": 0.014290634073484024
+  }
+]
